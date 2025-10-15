@@ -49,11 +49,16 @@ export default function SignupPage() {
 
     try {
       // Check if username already exists
-      const { data: existingUser } = await supabase
+      const { data: existingUser, error: checkError } = await supabase
         .from("profiles")
         .select("username")
         .eq("username", data.username)
-        .single()
+        .maybeSingle()
+
+      if (checkError && checkError.code !== "PGRST116") {
+        console.error("Username check error:", checkError)
+        throw new Error("사용자 확인 중 오류가 발생했습니다")
+      }
 
       if (existingUser) {
         toast.error("이미 사용 중인 아이디입니다")
@@ -61,7 +66,7 @@ export default function SignupPage() {
         return
       }
 
-      // Sign up user
+      // Sign up user with email confirmation disabled for development
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
@@ -69,12 +74,25 @@ export default function SignupPage() {
           data: {
             username: data.username,
             nickname: data.nickname,
+            avatar_color: avatarColor,
           },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       })
 
-      if (signUpError) throw signUpError
-      if (!authData.user) throw new Error("사용자 생성에 실패했습니다")
+      if (signUpError) {
+        console.error("SignUp error:", signUpError)
+        throw signUpError
+      }
+
+      if (!authData.user) {
+        throw new Error("사용자 생성에 실패했습니다")
+      }
+
+      console.log("User created:", authData.user.id)
+
+      // Wait a bit for the trigger to create the profile
+      await new Promise(resolve => setTimeout(resolve, 1000))
 
       // Upload avatar if provided
       let avatarUrl = null
@@ -83,31 +101,41 @@ export default function SignupPage() {
         const fileName = `${authData.user.id}.${fileExt}`
         const filePath = `${authData.user.id}/${fileName}`
 
+        console.log("Uploading avatar to:", filePath)
+
         const { error: uploadError } = await supabase.storage
           .from("profile-images")
           .upload(filePath, avatarFile)
 
-        if (uploadError) throw uploadError
+        if (uploadError) {
+          console.error("Avatar upload error:", uploadError)
+          // Don't throw error, just log it
+        } else {
+          const { data: urlData } = supabase.storage
+            .from("profile-images")
+            .getPublicUrl(filePath)
 
-        const { data: urlData } = supabase.storage
-          .from("profile-images")
-          .getPublicUrl(filePath)
-
-        avatarUrl = urlData.publicUrl
+          avatarUrl = urlData.publicUrl
+          console.log("Avatar uploaded:", avatarUrl)
+        }
       }
 
-      // Update profile with avatar URL and color
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({
-          avatar_url: avatarUrl,
-          avatar_color: avatarColor,
-        })
-        .eq("id", authData.user.id)
+      // Update profile with avatar URL
+      if (avatarUrl) {
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .update({
+            avatar_url: avatarUrl,
+          })
+          .eq("id", authData.user.id)
 
-      if (profileError) throw profileError
+        if (profileError) {
+          console.error("Profile update error:", profileError)
+          // Don't throw error, continue
+        }
+      }
 
-      toast.success("회원가입이 완료되었습니다!")
+      toast.success("회원가입이 완료되었습니다! 로그인해주세요.")
       router.push("/login")
     } catch (error: any) {
       console.error("Signup error:", error)
