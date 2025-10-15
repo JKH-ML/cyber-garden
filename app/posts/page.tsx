@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { PageSpinner } from "@/components/common/spinner"
 import { EmptyState } from "@/components/common/empty-state"
+import { PostCardSkeleton } from "@/components/common/post-card-skeleton"
 import { formatDistanceToNow } from "date-fns"
 import { ko } from "date-fns/locale"
 import Link from "next/link"
@@ -104,7 +105,7 @@ export default function PostsPage() {
     fetchPosts()
   }, [selectedCategory, supabase])
 
-  if (loading || categoriesLoading) return <PageSpinner />
+  if (categoriesLoading) return <PageSpinner />
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
@@ -143,7 +144,13 @@ export default function PostsPage() {
       </div>
 
       {/* Posts Grid */}
-      {posts.length === 0 ? (
+      {loading ? (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <PostCardSkeleton key={i} />
+          ))}
+        </div>
+      ) : posts.length === 0 ? (
         <EmptyState
           title="게시글이 없습니다"
           description={
@@ -163,7 +170,7 @@ export default function PostsPage() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {posts.map((post) => (
             <Link key={post.id} href={`/posts/${post.id}`}>
-              <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer h-full">
+              <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-[1.02] cursor-pointer h-full">
                 <div className="relative aspect-video w-full bg-muted">
                   <Image
                     src={post.thumbnail_url}
