@@ -53,6 +53,14 @@ export function Header() {
             >
               홈
             </Link>
+            <Link
+              href="/posts"
+              className={`text-sm font-medium transition-colors hover:text-primary ${
+                isActive("/posts") ? "text-foreground" : "text-muted-foreground"
+              }`}
+            >
+              게시글
+            </Link>
             {user && (
               <Link
                 href="/posts/create"
