@@ -1,8 +1,8 @@
 next, supabase, shadcn, lucide icon, zod, zustand, blocknote를 이용해서 웹사이트를 만들고싶음.
 - 사이트 이름: cyber garden
-- 회원가입(아이디, 비밀번호, 닉네임, 이메일 인증, 프로필사진)
-- 프로필 사진을 업로드하지 않으면 예쁜 단색 컬러 중에서 랜덤으로 적용하여 저장
-- 로그인(아이디, 비밀번호), 자동로그인 기능
+- 회원가입(이메일, 패스워드, 닉네임, 프로필사진)
+- 프로필 사진을 업로드하지 않으면 예쁜 파스텔톤 단색 컬러 8개를 정해놓고 랜덤으로 적용하여 저장
+- 로그인(이메일, 비밀번호), 자동로그인 기능
 - CRUD
 - 자신이 쓴 글만 수정/삭제 가능
 - 로그인 해야 글/댓글을 쓸 수 있음.
@@ -20,7 +20,6 @@ next, supabase, shadcn, lucide icon, zod, zustand, blocknote를 이용해서 웹
 - 로딩 중일 때 스켈레톤, 스피너 등 활용. 
 - 깔끔한 구글 noto sans 사용.
 - https://github.com/JKH-ML/cyber-garden 에 연동하여 vercel로 배포
-- supabase 세팅 어떻게 해야하는지 자세히 설명할 것. 일단 RLS 설정은 하지 말 것.
+- supabase 세팅 어떻게 해야하는지 자세히 설명할 것. 일단 RLS 설정은 하지 말 것. 이메일 인증은 꺼두었음.
 
 - npm run dev는 내가 직접 실행할거니까 너는 하지마.
-- progress.md 를 참조하여 단계별로 코드 작성, 테스트
